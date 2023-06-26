@@ -427,7 +427,8 @@ func RunOperator(ctx context.Context, controllerContext *controllercmd.Controlle
 		kubeInformersForNamespaces,
 		configInformers.Config().V1().ClusterVersions(),
 		configInformers.Config().V1().ClusterOperators(),
-		controllerContext.EventRecorder)
+		controllerContext.EventRecorder,
+		os.Getenv("IMAGE"))
 
 	unsupportedConfigOverridesController := unsupportedconfigoverridescontroller.NewUnsupportedConfigOverridesController(
 		operatorClient,
