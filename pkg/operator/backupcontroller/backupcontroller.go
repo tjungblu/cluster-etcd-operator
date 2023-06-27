@@ -22,6 +22,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apiserver/pkg/storage/names"
 	batchv1client "k8s.io/client-go/kubernetes/typed/batch/v1"
 
 	"k8s.io/client-go/kubernetes"
@@ -95,7 +96,7 @@ func (c *BackupController) sync(ctx context.Context, syncCtx factory.SyncContext
 	for _, item := range backups.Items {
 		if backupJob, ok := jobIndexed[item.Name]; ok {
 			klog.V(4).Infof("BackupController backup with name [%s] found, skipping", backupJob.Name)
-			// TODO(thomas): reconcile its status, add another label so we don't have to re-process it
+			// TODO(thomas): reconcile its status, add another label, so we don't have to re-process it
 			continue
 		}
 
@@ -114,20 +115,19 @@ func (c *BackupController) sync(ctx context.Context, syncCtx factory.SyncContext
 		return nil
 	}
 
-	// in case of multiple backups requested, we're trying to reconcile in order of their names, but only one at a time
+	// in case of multiple backups requested, we're trying to reconcile in order of their names
 	sort.Slice(backupsToRun, func(i, j int) bool {
 		return strings.Compare(backupsToRun[i].Name, backupsToRun[j].Name) < 0
 	})
 
 	for _, backup := range backupsToRun {
-		backupFileName := fmt.Sprintf("backup-%s-%s", backup.Name, time.Now().Format("2006-01-02_150405"))
-		klog.Infof("BackupController starts backup=[%s], writing to filename [%s]", backup.Name, backupFileName)
-		err := createBackupJob(ctx, backup.Name, backupFileName, c.targetImagePullSpec, jobsClient, syncCtx.Recorder())
+		err := createBackupJob(ctx, backup, c.targetImagePullSpec, jobsClient)
 		if err != nil {
 			return err
 		}
 
 		// only ever reconcile one item at a time
+		// TODO(thomas): we should mark the remainder as "Skipped"
 		return nil
 	}
 
@@ -174,7 +174,7 @@ func isJobFinished(j *batchv1.Job) bool {
 	return false
 }
 
-func createBackupJob(ctx context.Context, backupName, backupFileName, targetImagePullSpec string, client batchv1client.JobInterface, recorder events.Recorder) error {
+func createBackupJob(ctx context.Context, backup backupv1alpha1.EtcdBackup, targetImagePullSpec string, client batchv1client.JobInterface) error {
 	scheme := runtime.NewScheme()
 	codec := serializer.NewCodecFactory(scheme)
 	err := batchv1.AddToScheme(scheme)
@@ -187,16 +187,23 @@ func createBackupJob(ctx context.Context, backupName, backupFileName, targetImag
 		return fmt.Errorf("BackupController could not decode batchv1 job scheme: %w", err)
 	}
 
+	backupFileName := fmt.Sprintf("backup-%s-%s", backup.Name, time.Now().Format("2006-01-02_150405"))
+
 	job := obj.(*batchv1.Job)
-	// TODO(thomas): find another way to ensure uniqueness
-	job.Name = "cluster-backup-" + backupName
-	job.Labels["backup-name"] = backupName
+	job.Name = names.SimpleNameGenerator.GenerateName(job.Name)
+	job.Labels["backup-name"] = backup.Name
 
 	job.Spec.Template.Spec.Containers[0].Image = targetImagePullSpec
 	job.Spec.Template.Spec.Containers[0].Env = []corev1.EnvVar{
 		{Name: backupDirEnvName, Value: fmt.Sprintf("%s/%s", recentBackupPath, backupFileName)},
 	}
+	for _, mount := range job.Spec.Template.Spec.Volumes {
+		if mount.Name == "etc-kubernetes-cluster-backup" {
+			mount.PersistentVolumeClaim.ClaimName = backup.Spec.PVCName
+		}
+	}
 
+	klog.Infof("BackupController starts backup=[%s], writing to filename [%s]", backup.Name, backupFileName)
 	_, err = client.Create(ctx, job, v1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("BackupController could create job: %w", err)
