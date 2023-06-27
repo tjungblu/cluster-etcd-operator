@@ -37,7 +37,7 @@ func TestJobCreationHappyPath(t *testing.T) {
 
 	require.Truef(t, strings.HasPrefix(createdJob.Name, "cluster-backup-job"), "expected job.name [%s] to have prefix [cluster-backup-job]", createdJob.Name)
 	require.Equal(t, operatorclient.TargetNamespace, createdJob.Namespace)
-	require.Equal(t, "test-backup", createdJob.Labels["backup-name"])
+	require.Equal(t, "test-backup", createdJob.Labels[backupJobLabel])
 	require.Equal(t, "pullspec-image", createdJob.Spec.Template.Spec.Containers[0].Image)
 
 	foundVolume := false
@@ -50,6 +50,24 @@ func TestJobCreationHappyPath(t *testing.T) {
 
 	require.Truef(t, foundVolume, "could not find injected PVC volume in %v", createdJob.Spec.Template.Spec.Volumes)
 
+}
+
+func TestIndexJobsByBackupLabelName(t *testing.T) {
+	jobList := &batchv1.JobList{
+		Items: []batchv1.Job{
+			{ObjectMeta: v1.ObjectMeta{Name: "test-1", Labels: map[string]string{backupJobLabel: "test-1"}}},
+			{ObjectMeta: v1.ObjectMeta{Name: "test-2", Labels: map[string]string{backupJobLabel: "test-2"}}},
+			{ObjectMeta: v1.ObjectMeta{Name: "test-3", Labels: map[string]string{backupJobLabel: "test-3"}}},
+			{ObjectMeta: v1.ObjectMeta{Name: "test-4", Labels: map[string]string{"some-other-label": "value"}}},
+		},
+	}
+	expected := map[string]batchv1.Job{}
+	expected["test-1"] = jobList.Items[0]
+	expected["test-2"] = jobList.Items[1]
+	expected["test-3"] = jobList.Items[2]
+
+	m := indexJobsByBackupLabelName(jobList)
+	require.Equal(t, expected, m)
 }
 
 func TestIsJobComplete(t *testing.T) {

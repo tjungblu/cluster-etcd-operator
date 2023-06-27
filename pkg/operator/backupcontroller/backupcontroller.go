@@ -31,6 +31,7 @@ import (
 
 const (
 	backupLabel      = "cluster-backup-job"
+	backupJobLabel   = "backup-name"
 	recentBackupPath = "/etc/kubernetes/cluster-backup"
 	backupDirEnvName = "CLUSTER_BACKUP_PATH"
 )
@@ -141,8 +142,10 @@ func indexJobsByBackupLabelName(jobs *batchv1.JobList) map[string]batchv1.Job {
 	}
 
 	for _, j := range jobs.Items {
-		backupCrdName := j.Labels["backup-name"]
-		m[backupCrdName] = *j.DeepCopy()
+		backupCrdName := j.Labels[backupJobLabel]
+		if backupCrdName != "" {
+			m[backupCrdName] = *j.DeepCopy()
+		}
 	}
 
 	return m
@@ -191,7 +194,7 @@ func createBackupJob(ctx context.Context, backup backupv1alpha1.EtcdBackup, targ
 
 	job := obj.(*batchv1.Job)
 	job.Name = names.SimpleNameGenerator.GenerateName(job.Name)
-	job.Labels["backup-name"] = backup.Name
+	job.Labels[backupJobLabel] = backup.Name
 
 	job.Spec.Template.Spec.Containers[0].Image = targetImagePullSpec
 	job.Spec.Template.Spec.Containers[0].Env = []corev1.EnvVar{
