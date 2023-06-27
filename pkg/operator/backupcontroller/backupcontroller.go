@@ -197,13 +197,21 @@ func createBackupJob(ctx context.Context, backup backupv1alpha1.EtcdBackup, targ
 	job.Spec.Template.Spec.Containers[0].Env = []corev1.EnvVar{
 		{Name: backupDirEnvName, Value: fmt.Sprintf("%s/%s", recentBackupPath, backupFileName)},
 	}
+
+	injected := false
 	for _, mount := range job.Spec.Template.Spec.Volumes {
 		if mount.Name == "etc-kubernetes-cluster-backup" {
 			mount.PersistentVolumeClaim.ClaimName = backup.Spec.PVCName
+			injected = true
+			break
 		}
 	}
 
-	klog.Infof("BackupController starts backup=[%s], writing to filename [%s]", backup.Name, backupFileName)
+	if !injected {
+		return fmt.Errorf("could not inject PVC into Job template, please check the included cluster-backup-job.yaml")
+	}
+
+	klog.Infof("BackupController starts with backup [%s] as job [%s], writing to filename [%s]", backup.Name, job.Name, backupFileName)
 	_, err = client.Create(ctx, job, v1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("BackupController could create job: %w", err)

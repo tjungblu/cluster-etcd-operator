@@ -136,7 +136,8 @@ spec:
             name: etcd-ca-bundle
         - name: etc-kubernetes-cluster-backup
           persistentVolumeClaim:
-            claimName: templated`)
+            claimName: templated
+`)
 
 func etcdClusterBackupJobYamlBytes() ([]byte, error) {
 	return _etcdClusterBackupJobYaml, nil
