@@ -77,13 +77,21 @@ func NewBackupController(
 
 func (c *BackupController) sync(ctx context.Context, _ factory.SyncContext) error {
 	jobsClient := c.kubeClient.BatchV1().Jobs(operatorclient.TargetNamespace)
-	currentJobs, err := jobsClient.List(ctx, v1.ListOptions{LabelSelector: "app=" + backupLabel})
+	currentJobs, err := jobsClient.List(ctx, v1.ListOptions{LabelSelector: "app=" + backupLabel + ",state!=processed"})
 	if err != nil {
 		return fmt.Errorf("BackupController could not list backup jobs, error was: %w", err)
 	}
 
+	// we only allow to run one at a time, if there's currently a job running then we will skip it in this reconciliation step
+	runningJobs := findRunningJobs(currentJobs)
+	if len(runningJobs) > 0 {
+		klog.V(4).Infof("BackupController already found [%d] running jobs, skipping", len(runningJobs))
+		return nil
+	}
+
 	jobIndexed := indexJobsByBackupLabelName(currentJobs)
-	backups, err := c.backupsClient.EtcdBackups().List(ctx, v1.ListOptions{})
+	backupsClient := c.backupsClient.EtcdBackups()
+	backups, err := backupsClient.List(ctx, v1.ListOptions{LabelSelector: "state!=processed"})
 	if err != nil {
 		return fmt.Errorf("BackupController could not list etcdbackups CRDs, error was: %w", err)
 	}
@@ -92,12 +100,15 @@ func (c *BackupController) sync(ctx context.Context, _ factory.SyncContext) erro
 		return nil
 	}
 
-	klog.V(4).Infof("BackupController backup: %v", backups)
 	var backupsToRun []backupv1alpha1.EtcdBackup
 	for _, item := range backups.Items {
 		if backupJob, ok := jobIndexed[item.Name]; ok {
 			klog.V(4).Infof("BackupController backup with name [%s] found, skipping", backupJob.Name)
-			// TODO(thomas): reconcile its status, add another label, so we don't have to re-process it
+			err := reconcileJobStatus(ctx, jobsClient, backupsClient, backupJob, item)
+			if err != nil {
+				return fmt.Errorf("BackupController could not reconcile job status: %w", err)
+			}
+
 			continue
 		}
 
@@ -109,12 +120,7 @@ func (c *BackupController) sync(ctx context.Context, _ factory.SyncContext) erro
 		return nil
 	}
 
-	// we only allow to run one at a time, if there's currently a job running then we will skip it in this reconciliation step
-	runningJobs := findRunningJobs(currentJobs)
-	if len(runningJobs) > 0 {
-		klog.V(4).Infof("BackupController already found [%d] running jobs, skipping", len(runningJobs))
-		return nil
-	}
+	klog.V(4).Infof("BackupController backupsToRun: %v", backupsToRun)
 
 	// in case of multiple backups requested, we're trying to reconcile in order of their names
 	sort.Slice(backupsToRun, func(i, j int) bool {
@@ -122,7 +128,7 @@ func (c *BackupController) sync(ctx context.Context, _ factory.SyncContext) erro
 	})
 
 	for _, backup := range backupsToRun {
-		err := createBackupJob(ctx, backup, c.targetImagePullSpec, jobsClient)
+		err := createBackupJob(ctx, backup, c.targetImagePullSpec, jobsClient, backupsClient)
 		if err != nil {
 			return err
 		}
@@ -177,7 +183,47 @@ func isJobFinished(j *batchv1.Job) bool {
 	return false
 }
 
-func createBackupJob(ctx context.Context, backup backupv1alpha1.EtcdBackup, targetImagePullSpec string, client batchv1client.JobInterface) error {
+func reconcileJobStatus(ctx context.Context,
+	jobClient batchv1client.JobInterface,
+	backupClient backupv1client.EtcdBackupInterface,
+	job batchv1.Job,
+	backup backupv1alpha1.EtcdBackup) error {
+
+	jobState := backupv1alpha1.Pending
+	for _, c := range job.Status.Conditions {
+		// the types and type transitions are compatible between jobs and our backup states
+		if (c.Type == batchv1.JobComplete || c.Type == batchv1.JobFailed) && c.Status == corev1.ConditionTrue {
+			jobState = backupv1alpha1.EtcdBackupState(c.Type)
+			break
+		}
+	}
+
+	backup.Labels["state"] = "processed"
+	backup.Status.State = jobState
+	_, err := backupClient.Update(ctx, &backup, v1.UpdateOptions{})
+	if err != nil {
+		return fmt.Errorf("error while updating backup status [%s]: %w", backup.Name, err)
+	}
+
+	// we don't want to update the job below while it's not completed/failed
+	if jobState == backupv1alpha1.Pending {
+		return nil
+	}
+
+	job.Labels["state"] = "processed"
+	_, err = jobClient.Update(ctx, &job, v1.UpdateOptions{})
+	if err != nil {
+		return fmt.Errorf("error while updating job labels [%s]: %w", job.Name, err)
+	}
+
+	return nil
+}
+
+func createBackupJob(ctx context.Context,
+	backup backupv1alpha1.EtcdBackup,
+	targetImagePullSpec string,
+	jobClient batchv1client.JobInterface,
+	backupClient backupv1client.EtcdBackupInterface) error {
 	scheme := runtime.NewScheme()
 	codec := serializer.NewCodecFactory(scheme)
 	err := batchv1.AddToScheme(scheme)
@@ -215,9 +261,28 @@ func createBackupJob(ctx context.Context, backup backupv1alpha1.EtcdBackup, targ
 	}
 
 	klog.Infof("BackupController starts with backup [%s] as job [%s], writing to filename [%s]", backup.Name, job.Name, backupFileName)
-	_, err = client.Create(ctx, job, v1.CreateOptions{})
+	_, err = jobClient.Create(ctx, job, v1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("BackupController could create job: %w", err)
 	}
+
+	conditions := []v1.Condition{
+		{
+			Type:    "BackupStatus",
+			Reason:  "BackupStarted",
+			Message: fmt.Sprintf("Upgrade backup job created with name %s", job.Name),
+		},
+		{
+			Type:    "BackupFilename",
+			Reason:  "BackupStarted",
+			Message: backupFileName,
+		},
+	}
+	backup.Status = backupv1alpha1.EtcdBackupStatus{State: backupv1alpha1.Pending, Conditions: conditions}
+	_, err = backupClient.UpdateStatus(ctx, &backup, v1.UpdateOptions{})
+	if err != nil {
+		return fmt.Errorf("BackupController error while updating status: %w", err)
+	}
+
 	return nil
 }
