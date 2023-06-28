@@ -197,7 +197,7 @@ github.com/modern-go/reflect2
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit
 github.com/munnerz/goautoneg
-# github.com/openshift/api v0.0.0-20230607130528-611114dca681 => ../api
+# github.com/openshift/api v0.0.0-20230621174358-ea40115b9fa6 => ../api
 ## explicit; go 1.20
 github.com/openshift/api
 github.com/openshift/api/apiserver
@@ -206,7 +206,6 @@ github.com/openshift/api/apps
 github.com/openshift/api/apps/v1
 github.com/openshift/api/authorization
 github.com/openshift/api/authorization/v1
-github.com/openshift/api/backup/v1alpha1
 github.com/openshift/api/build
 github.com/openshift/api/build/v1
 github.com/openshift/api/cloudnetwork
@@ -280,10 +279,6 @@ github.com/openshift/build-machinery-go/make/targets/openshift/operator
 github.com/openshift/build-machinery-go/scripts
 # github.com/openshift/client-go v0.0.0-20230503144108-75015d2347cb => ../client-go
 ## explicit; go 1.20
-github.com/openshift/client-go/backup/applyconfigurations/backup/v1alpha1
-github.com/openshift/client-go/backup/applyconfigurations/internal
-github.com/openshift/client-go/backup/clientset/versioned/scheme
-github.com/openshift/client-go/backup/clientset/versioned/typed/backup/v1alpha1
 github.com/openshift/client-go/config/applyconfigurations/config/v1
 github.com/openshift/client-go/config/applyconfigurations/config/v1alpha1
 github.com/openshift/client-go/config/applyconfigurations/internal
@@ -318,6 +313,7 @@ github.com/openshift/client-go/operator/clientset/versioned
 github.com/openshift/client-go/operator/clientset/versioned/scheme
 github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1
 github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1
+github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1/fake
 github.com/openshift/client-go/operator/informers/externalversions
 github.com/openshift/client-go/operator/informers/externalversions/internalinterfaces
 github.com/openshift/client-go/operator/informers/externalversions/operator
@@ -1488,7 +1484,5 @@ sigs.k8s.io/structured-merge-diff/v4/value
 sigs.k8s.io/yaml
 # github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 # github.com/openshift/api => ../api
-# github.com/openshift/api/backup => ../api/backup
 # github.com/openshift/client-go => ../client-go
-# github.com/openshift/client-go/backup => ../client-go/backup
 # vbom.ml/util => github.com/fvbommel/util v0.0.0-20180919145318-efcd4e0f9787

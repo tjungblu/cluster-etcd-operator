@@ -1,8 +1,0 @@
-- op: add
-  path: /spec/overrides
-  value:
-    - group: apps
-      kind: Deployment
-      name: etcd-operator
-      namespace: openshift-etcd-operator
-      unmanaged: true

@@ -143,16 +143,6 @@ var (
 		OwningProduct:       ocpSpecific,
 	}
 
-	FeatureGateMatchLabelKeysInPodTopologySpread = FeatureGateName("MatchLabelKeysInPodTopologySpread")
-	matchLabelKeysInPodTopologySpread            = FeatureGateDescription{
-		FeatureGateAttributes: FeatureGateAttributes{
-			Name: FeatureGateMatchLabelKeysInPodTopologySpread,
-		},
-		OwningJiraComponent: "scheduling",
-		ResponsiblePerson:   "ingvagabund",
-		OwningProduct:       kubernetes,
-	}
-
 	FeatureGatePDBUnhealthyPodEvictionPolicy = FeatureGateName("PDBUnhealthyPodEvictionPolicy")
 	pdbUnhealthyPodEvictionPolicy            = FeatureGateDescription{
 		FeatureGateAttributes: FeatureGateAttributes{
@@ -272,13 +262,13 @@ var (
 		ResponsiblePerson:   "mkowalsk",
 		OwningProduct:       kubernetes,
 	}
-	FeatureGateEtcdBackupAPI = FeatureGateName("EtcdBackupAPI")
-	etcdBackupAPI            = FeatureGateDescription{
+	FeatureGateVSphereStaticIPs = FeatureGateName("VSphereStaticIPs")
+	vSphereStaticIPs            = FeatureGateDescription{
 		FeatureGateAttributes: FeatureGateAttributes{
-			Name: FeatureGateEtcdBackupAPI,
+			Name: FeatureGateVSphereStaticIPs,
 		},
-		OwningJiraComponent: "etcd",
-		ResponsiblePerson:   "hasbro17",
+		OwningJiraComponent: "splat",
+		ResponsiblePerson:   "rvanderp3",
 		OwningProduct:       ocpSpecific,
 	}
 )

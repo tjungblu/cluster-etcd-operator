@@ -5,15 +5,34 @@ import (
 	"strings"
 	"testing"
 
-	backupv1alpha1 "github.com/openshift/api/backup/v1alpha1"
+	backupv1alpha1 "github.com/openshift/api/operator/v1alpha1"
+	operatorfakeclient "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1/fake"
 	"github.com/openshift/cluster-etcd-operator/pkg/operator/operatorclient"
 	"github.com/stretchr/testify/require"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 )
+
+func TestSyncLoopHappyPath(t *testing.T) {
+	var objects []runtime.Object
+
+	client := fake.NewSimpleClientset(objects...)
+	fakeBackupClient := &operatorfakeclient.FakeOperatorV1alpha1{Fake: &client.Fake}
+
+	controller := BackupController{
+		backupsClient:       fakeBackupClient,
+		kubeClient:          client,
+		targetImagePullSpec: "pullspec-image",
+	}
+
+	err := controller.sync(context.TODO(), nil)
+	require.NoError(t, err)
+
+}
 
 func TestJobCreationHappyPath(t *testing.T) {
 	client := fake.NewSimpleClientset()

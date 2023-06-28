@@ -7,9 +7,9 @@ metadata:
     include.release.openshift.io/self-managed-high-availability: "true"
     include.release.openshift.io/single-node-developer: "true"
     release.openshift.io/feature-set: TechPreviewNoUpgrade
-  name: etcdbackups.backup.openshift.io
+  name: etcdbackups.operator.openshift.io
 spec:
-  group: backup.openshift.io
+  group: operator.openshift.io
   names:
     kind: EtcdBackup
     listKind: EtcdBackupList
@@ -22,8 +22,8 @@ spec:
       storage: true
       subresources:
         status: {}
-      schema:
-        openAPIV3Schema:
+      "schema":
+        "openAPIV3Schema":
           description: "# EtcdBackup provides configuration options and status for a one-time backup attempt of the etcd cluster \n Compatibility level 4: No compatibility is provided, the API can change at any point for any reason. These capabilities should not be used by applications needing long term support."
           type: object
           required:

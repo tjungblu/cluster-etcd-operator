@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	backupv1alpha1 "github.com/openshift/api/backup/v1alpha1"
-	backupv1client "github.com/openshift/client-go/backup/clientset/versioned/typed/backup/v1alpha1"
+	backupv1alpha1 "github.com/openshift/api/operator/v1alpha1"
 	configv1client "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	configv1informers "github.com/openshift/client-go/config/informers/externalversions/config/v1"
+	backupv1client "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	"github.com/openshift/cluster-etcd-operator/pkg/operator/etcd_assets"
 	"github.com/openshift/cluster-etcd-operator/pkg/operator/health"
 	"github.com/openshift/cluster-etcd-operator/pkg/operator/operatorclient"
@@ -75,7 +75,7 @@ func NewBackupController(
 	).WithSync(syncer.Sync).ToController("BackupController", eventRecorder.WithComponentSuffix("backup-controller"))
 }
 
-func (c *BackupController) sync(ctx context.Context, syncCtx factory.SyncContext) error {
+func (c *BackupController) sync(ctx context.Context, _ factory.SyncContext) error {
 	jobsClient := c.kubeClient.BatchV1().Jobs(operatorclient.TargetNamespace)
 	currentJobs, err := jobsClient.List(ctx, v1.ListOptions{LabelSelector: "app=" + backupLabel})
 	if err != nil {

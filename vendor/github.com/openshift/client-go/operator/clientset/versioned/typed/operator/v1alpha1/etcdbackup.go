@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
-	v1alpha1 "github.com/openshift/api/backup/v1alpha1"
-	backupv1alpha1 "github.com/openshift/client-go/backup/applyconfigurations/backup/v1alpha1"
-	scheme "github.com/openshift/client-go/backup/clientset/versioned/scheme"
+	v1alpha1 "github.com/openshift/api/operator/v1alpha1"
+	operatorv1alpha1 "github.com/openshift/client-go/operator/applyconfigurations/operator/v1alpha1"
+	scheme "github.com/openshift/client-go/operator/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -34,8 +34,8 @@ type EtcdBackupInterface interface {
 	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.EtcdBackupList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.EtcdBackup, err error)
-	Apply(ctx context.Context, etcdBackup *backupv1alpha1.EtcdBackupApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.EtcdBackup, err error)
-	ApplyStatus(ctx context.Context, etcdBackup *backupv1alpha1.EtcdBackupApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.EtcdBackup, err error)
+	Apply(ctx context.Context, etcdBackup *operatorv1alpha1.EtcdBackupApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.EtcdBackup, err error)
+	ApplyStatus(ctx context.Context, etcdBackup *operatorv1alpha1.EtcdBackupApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.EtcdBackup, err error)
 	EtcdBackupExpansion
 }
 
@@ -45,7 +45,7 @@ type etcdBackups struct {
 }
 
 // newEtcdBackups returns a EtcdBackups
-func newEtcdBackups(c *BackupV1alpha1Client) *etcdBackups {
+func newEtcdBackups(c *OperatorV1alpha1Client) *etcdBackups {
 	return &etcdBackups{
 		client: c.RESTClient(),
 	}
@@ -173,7 +173,7 @@ func (c *etcdBackups) Patch(ctx context.Context, name string, pt types.PatchType
 }
 
 // Apply takes the given apply declarative configuration, applies it and returns the applied etcdBackup.
-func (c *etcdBackups) Apply(ctx context.Context, etcdBackup *backupv1alpha1.EtcdBackupApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.EtcdBackup, err error) {
+func (c *etcdBackups) Apply(ctx context.Context, etcdBackup *operatorv1alpha1.EtcdBackupApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.EtcdBackup, err error) {
 	if etcdBackup == nil {
 		return nil, fmt.Errorf("etcdBackup provided to Apply must not be nil")
 	}
@@ -199,7 +199,7 @@ func (c *etcdBackups) Apply(ctx context.Context, etcdBackup *backupv1alpha1.Etcd
 
 // ApplyStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *etcdBackups) ApplyStatus(ctx context.Context, etcdBackup *backupv1alpha1.EtcdBackupApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.EtcdBackup, err error) {
+func (c *etcdBackups) ApplyStatus(ctx context.Context, etcdBackup *operatorv1alpha1.EtcdBackupApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.EtcdBackup, err error) {
 	if etcdBackup == nil {
 		return nil, fmt.Errorf("etcdBackup provided to Apply must not be nil")
 	}

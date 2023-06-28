@@ -3,8 +3,8 @@
 package v1alpha1
 
 import (
-	backupv1alpha1 "github.com/openshift/api/backup/v1alpha1"
-	internal "github.com/openshift/client-go/backup/applyconfigurations/internal"
+	operatorv1alpha1 "github.com/openshift/api/operator/v1alpha1"
+	internal "github.com/openshift/client-go/operator/applyconfigurations/internal"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
@@ -26,7 +26,7 @@ func EtcdBackup(name string) *EtcdBackupApplyConfiguration {
 	b := &EtcdBackupApplyConfiguration{}
 	b.WithName(name)
 	b.WithKind("EtcdBackup")
-	b.WithAPIVersion("backup.openshift.io/v1alpha1")
+	b.WithAPIVersion("operator.openshift.io/v1alpha1")
 	return b
 }
 
@@ -41,27 +41,27 @@ func EtcdBackup(name string) *EtcdBackupApplyConfiguration {
 // Note that an extracted apply configuration will contain fewer fields than what the fieldManager previously
 // applied if another fieldManager has updated or force applied any of the previously applied fields.
 // Experimental!
-func ExtractEtcdBackup(etcdBackup *backupv1alpha1.EtcdBackup, fieldManager string) (*EtcdBackupApplyConfiguration, error) {
+func ExtractEtcdBackup(etcdBackup *operatorv1alpha1.EtcdBackup, fieldManager string) (*EtcdBackupApplyConfiguration, error) {
 	return extractEtcdBackup(etcdBackup, fieldManager, "")
 }
 
 // ExtractEtcdBackupStatus is the same as ExtractEtcdBackup except
 // that it extracts the status subresource applied configuration.
 // Experimental!
-func ExtractEtcdBackupStatus(etcdBackup *backupv1alpha1.EtcdBackup, fieldManager string) (*EtcdBackupApplyConfiguration, error) {
+func ExtractEtcdBackupStatus(etcdBackup *operatorv1alpha1.EtcdBackup, fieldManager string) (*EtcdBackupApplyConfiguration, error) {
 	return extractEtcdBackup(etcdBackup, fieldManager, "status")
 }
 
-func extractEtcdBackup(etcdBackup *backupv1alpha1.EtcdBackup, fieldManager string, subresource string) (*EtcdBackupApplyConfiguration, error) {
+func extractEtcdBackup(etcdBackup *operatorv1alpha1.EtcdBackup, fieldManager string, subresource string) (*EtcdBackupApplyConfiguration, error) {
 	b := &EtcdBackupApplyConfiguration{}
-	err := managedfields.ExtractInto(etcdBackup, internal.Parser().Type("com.github.openshift.api.backup.v1alpha1.EtcdBackup"), fieldManager, b, subresource)
+	err := managedfields.ExtractInto(etcdBackup, internal.Parser().Type("com.github.openshift.api.operator.v1alpha1.EtcdBackup"), fieldManager, b, subresource)
 	if err != nil {
 		return nil, err
 	}
 	b.WithName(etcdBackup.Name)
 
 	b.WithKind("EtcdBackup")
-	b.WithAPIVersion("backup.openshift.io/v1alpha1")
+	b.WithAPIVersion("operator.openshift.io/v1alpha1")
 	return b, nil
 }
 

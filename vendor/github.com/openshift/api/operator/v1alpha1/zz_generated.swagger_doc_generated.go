@@ -135,6 +135,43 @@ func (VersionAvailability) SwaggerDoc() map[string]string {
 	return map_VersionAvailability
 }
 
+var map_EtcdBackup = map[string]string{
+	"":       "\n\n# EtcdBackup provides configuration options and status for a one-time backup attempt of the etcd cluster\n\nCompatibility level 4: No compatibility is provided, the API can change at any point for any reason. These capabilities should not be used by applications needing long term support.",
+	"spec":   "spec holds user settable values for configuration",
+	"status": "status holds observed values from the cluster. They may not be overridden.",
+}
+
+func (EtcdBackup) SwaggerDoc() map[string]string {
+	return map_EtcdBackup
+}
+
+var map_EtcdBackupList = map[string]string{
+	"": "EtcdBackupList is a collection of items\n\nCompatibility level 4: No compatibility is provided, the API can change at any point for any reason. These capabilities should not be used by applications needing long term support.",
+}
+
+func (EtcdBackupList) SwaggerDoc() map[string]string {
+	return map_EtcdBackupList
+}
+
+var map_EtcdBackupSpec = map[string]string{
+	"pvcName": "PVCName specifies the name of the PersistentVolumeClaim which binds a PersistentVolume where the etcd backup file would be saved",
+}
+
+func (EtcdBackupSpec) SwaggerDoc() map[string]string {
+	return map_EtcdBackupSpec
+}
+
+var map_EtcdBackupStatus = map[string]string{
+	"conditions":      "conditions provide details on the status of the gatherer job.",
+	"etcdBackupState": "etcdBackupState reflects the current state of the etcd backup process.",
+	"startTime":       "startTime is the time when the etcd backup started.",
+	"finishTime":      "finishTime is the time when the etcd backup finished.",
+}
+
+func (EtcdBackupStatus) SwaggerDoc() map[string]string {
+	return map_EtcdBackupStatus
+}
+
 var map_ImageContentSourcePolicy = map[string]string{
 	"":         "ImageContentSourcePolicy holds cluster-wide information about how to handle registry mirror rules. When multiple policies are defined, the outcome of the behavior is defined on each field.\n\nCompatibility level 4: No compatibility is provided, the API can change at any point for any reason. These capabilities should not be used by applications needing long term support.",
 	"metadata": "metadata is the standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata",

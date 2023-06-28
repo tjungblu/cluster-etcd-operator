@@ -5,37 +5,37 @@ tests:
   onCreate:
   - name: Should be able to create an EtcdBackup with a valid spec
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
     expected: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
   - name: Should fail to create an EtcdBackup without the required pvcName
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec: {}
     expectedError: "spec.pvcName: Required value"
   onUpdate:
   - name: pvcName is immutable once set
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
     updated: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: updated-etcdbackup-pvc
     expectedError: "spec.pvcName: Invalid value: \"string\": pvcName is immutable once set"
   - name: startTime cannot be removed from status
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -44,7 +44,7 @@ tests:
         finishTime: 2023-06-15T16:33:08Z
         etcdBackupState: Completed
     updated: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -54,7 +54,7 @@ tests:
     expectedStatusError: "status: Invalid value: \"object\": cannot remove startTime attribute from status"
   - name: finishTime cannot be removed from status
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -63,7 +63,7 @@ tests:
         finishTime: 2023-06-15T16:33:08Z
         etcdBackupState: Completed
     updated: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -73,7 +73,7 @@ tests:
     expectedStatusError: "status: Invalid value: \"object\": cannot remove finishTime attribute from status"
   - name: etcdBackupState cannot be removed from status
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -82,7 +82,7 @@ tests:
         finishTime: 2023-06-15T16:33:08Z
         etcdBackupState: Completed
     updated: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -92,7 +92,7 @@ tests:
     expectedStatusError: "status: Invalid value: \"object\": cannot remove etcdBackupState attribute from status"
   - name: etcdBackupState cannot transition from Running to Pending
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -101,7 +101,7 @@ tests:
         finishTime: 2023-06-15T16:33:08Z
         etcdBackupState: Running
     updated: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -112,7 +112,7 @@ tests:
     expectedStatusError: "status.etcdBackupState: Invalid value: \"string\": etcdBackupState cannot transition from Running to Pending"
   - name: etcdBackupState cannot transition from Completed to Pending
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -121,7 +121,7 @@ tests:
         finishTime: 2023-06-15T16:33:08Z
         etcdBackupState: Completed
     updated: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -132,7 +132,7 @@ tests:
     expectedStatusError: "status.etcdBackupState: Invalid value: \"string\": etcdBackupState cannot transition from Completed to Pending"
   - name: etcdBackupState cannot transition from Failed to Pending
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -141,7 +141,7 @@ tests:
         finishTime: 2023-06-15T16:33:08Z
         etcdBackupState: Failed
     updated: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -152,7 +152,7 @@ tests:
     expectedStatusError: "status.etcdBackupState: Invalid value: \"string\": etcdBackupState cannot transition from Failed to Pending"
   - name: etcdBackupState cannot transition from Completed to Running
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -161,7 +161,7 @@ tests:
         finishTime: 2023-06-15T16:33:08Z
         etcdBackupState: Completed
     updated: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -172,7 +172,7 @@ tests:
     expectedStatusError: "status.etcdBackupState: Invalid value: \"string\": etcdBackupState cannot transition from Completed to Running"
   - name: etcdBackupState cannot transition from Failed to Running
     initial: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc
@@ -181,7 +181,7 @@ tests:
         finishTime: 2023-06-15T16:33:08Z
         etcdBackupState: Failed
     updated: |
-      apiVersion: backup.openshift.io/v1alpha1
+      apiVersion: operator.openshift.io/v1alpha1
       kind: EtcdBackup
       spec:
         pvcName: etcdbackup-pvc

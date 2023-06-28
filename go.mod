@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/mcuadros/go-version v0.0.0-20190830083331-035f6764e8d2
-	github.com/openshift/api v0.0.0-20230607130528-611114dca681
+	github.com/openshift/api v0.0.0-20230621174358-ea40115b9fa6
 	github.com/openshift/build-machinery-go v0.0.0-20220913142420-e25cf57ea46d
 	github.com/openshift/client-go v0.0.0-20230503144108-75015d2347cb
 	github.com/openshift/library-go v0.0.0-20230531082824-be85f8400975
@@ -140,8 +140,6 @@ replace (
 
 	// TODO(thomas): while API and clients are not merged yet
 	github.com/openshift/api => ../api
-	github.com/openshift/api/backup => ../api/backup
 	github.com/openshift/client-go => ../client-go
-	github.com/openshift/client-go/backup => ../client-go/backup
 	vbom.ml/util => github.com/fvbommel/util v0.0.0-20180919145318-efcd4e0f9787
 )

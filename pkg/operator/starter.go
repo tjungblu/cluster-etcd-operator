@@ -9,7 +9,6 @@ import (
 
 	configv1 "github.com/openshift/api/config/v1"
 	operatorv1 "github.com/openshift/api/operator/v1"
-	backupv1alphaclient "github.com/openshift/client-go/backup/clientset/versioned/typed/backup/v1alpha1"
 
 	configv1client "github.com/openshift/client-go/config/clientset/versioned"
 	configv1informers "github.com/openshift/client-go/config/informers/externalversions"
@@ -17,6 +16,7 @@ import (
 	machineinformersv1beta1 "github.com/openshift/client-go/machine/informers/externalversions/machine/v1beta1"
 	machinelistersv1beta1 "github.com/openshift/client-go/machine/listers/machine/v1beta1"
 	operatorversionedclient "github.com/openshift/client-go/operator/clientset/versioned"
+	operatorversionedclientv1alpha1 "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1alpha1"
 	operatorv1informers "github.com/openshift/client-go/operator/informers/externalversions"
 	"github.com/openshift/cluster-etcd-operator/pkg/operator/backupcontroller"
 	"github.com/openshift/cluster-etcd-operator/pkg/operator/health"
@@ -80,11 +80,11 @@ func RunOperator(ctx context.Context, controllerContext *controllercmd.Controlle
 	if err != nil {
 		return err
 	}
-	configClient, err := configv1client.NewForConfig(controllerContext.KubeConfig)
+	opreatorConfigClientv1Alpha1, err := operatorversionedclientv1alpha1.NewForConfig(controllerContext.KubeConfig)
 	if err != nil {
 		return err
 	}
-	backupClient, err := backupv1alphaclient.NewForConfig(controllerContext.KubeConfig)
+	configClient, err := configv1client.NewForConfig(controllerContext.KubeConfig)
 	if err != nil {
 		return err
 	}
@@ -422,7 +422,7 @@ func RunOperator(ctx context.Context, controllerContext *controllercmd.Controlle
 		AlivenessChecker,
 		operatorClient,
 		configClient.ConfigV1(),
-		backupClient,
+		opreatorConfigClientv1Alpha1,
 		kubeClient,
 		kubeInformersForNamespaces,
 		configInformers.Config().V1().ClusterVersions(),

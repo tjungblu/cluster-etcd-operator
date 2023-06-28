@@ -3,7 +3,7 @@
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/openshift/api/backup/v1alpha1"
+	v1alpha1 "github.com/openshift/api/operator/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
