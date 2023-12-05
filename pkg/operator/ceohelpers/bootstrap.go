@@ -182,6 +182,18 @@ func IsBootstrapComplete(configMapClient corev1listers.ConfigMapLister, staticPo
 		return false, nil
 	}
 
+	// check if etcd-bootstrap member is still present within the etcd cluster membership
+	membersList, err := etcdClient.MemberList(context.Background())
+	if err != nil {
+		return false, fmt.Errorf("IsBootstrapComplete couldn't list the etcd cluster members: %w", err)
+	}
+	for _, m := range membersList {
+		if m.Name == "etcd-bootstrap" {
+			klog.V(4).Infof("(etcd-bootstrap) member is still present in the etcd cluster membership")
+			return false, nil
+		}
+	}
+
 	// now run check to stability of revisions
 	_, status, _, err := staticPodClient.GetStaticPodOperatorState()
 	if err != nil {
@@ -193,18 +205,6 @@ func IsBootstrapComplete(configMapClient corev1listers.ConfigMapLister, staticPo
 	for _, curr := range status.NodeStatuses {
 		if curr.CurrentRevision != status.LatestAvailableRevision {
 			klog.V(4).Infof("bootstrap considered incomplete because revision %d is still in progress", status.LatestAvailableRevision)
-			return false, nil
-		}
-	}
-
-	// check if etcd-bootstrap member is still present within the etcd cluster membership
-	membersList, err := etcdClient.MemberList(context.Background())
-	if err != nil {
-		return false, fmt.Errorf("IsBootstrapComplete couldn't list the etcd cluster members: %w", err)
-	}
-	for _, m := range membersList {
-		if m.Name == "etcd-bootstrap" {
-			klog.V(4).Infof("(etcd-bootstrap) member is still present in the etcd cluster membership")
 			return false, nil
 		}
 	}
