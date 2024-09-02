@@ -202,26 +202,33 @@ func routableAddresses(addrMap addrMap, routeMap routeMap, vips []net.IP, af Add
 }
 
 func ipAddrs() ([]net.IP, error) {
-	ips := []net.IP{}
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return ips, err
-	}
-	for _, addr := range addrs {
-		var ip net.IP
-		switch v := addr.(type) {
-		case *net.IPNet:
-			ip = v.IP
-		case *net.IPAddr:
-			ip = v.IP
+	return []net.IP{
+		net.ParseIP("192.168.29.85"),
+		net.ParseIP("10.10.13.85"),
+	}, nil
+	/*
+		ips := []net.IP{}
+		addrs, err := net.InterfaceAddrs()
+		if err != nil {
+			return ips, err
 		}
-		if ip == nil {
-			continue
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+			if ip == nil {
+				continue
+			}
+			if !ip.IsGlobalUnicast() {
+				continue // we only want global unicast address
+			}
+			ips = append(ips, ip)
 		}
-		if !ip.IsGlobalUnicast() {
-			continue // we only want global unicast address
-		}
-		ips = append(ips, ip)
-	}
-	return ips, nil
+		return ips, nil
+
+	*/
 }
