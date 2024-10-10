@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
 	"testing"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	operatorv1 "github.com/openshift/api/operator/v1"
 )

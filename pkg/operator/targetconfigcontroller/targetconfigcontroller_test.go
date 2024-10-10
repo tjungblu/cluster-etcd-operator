@@ -7,6 +7,8 @@ import (
 	"slices"
 	"testing"
 
+	"k8s.io/client-go/kubernetes/scheme"
+
 	configv1 "github.com/openshift/api/config/v1"
 	backupv1alpha1 "github.com/openshift/api/config/v1alpha1"
 	operatorv1 "github.com/openshift/api/operator/v1"

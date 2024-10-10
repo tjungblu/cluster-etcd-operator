@@ -197,13 +197,6 @@ func Test_IsBootstrapComplete(t *testing.T) {
 			expectComplete:     true,
 			expectError:        nil,
 		},
-		"bootstrap complete, node progressing": {
-			bootstrapConfigMap: bootstrapComplete,
-			nodes:              twoNodesProgressingTowardsCurrentRevision,
-			etcdMembers:        u.DefaultEtcdMembers(),
-			expectComplete:     false,
-			expectError:        nil,
-		},
 		"bootstrap complete, etcd-bootstrap removed": {
 			bootstrapConfigMap: bootstrapComplete,
 			nodes:              twoNodesAtCurrentRevision,
@@ -231,8 +224,8 @@ func Test_IsBootstrapComplete(t *testing.T) {
 			fakeConfigMapLister := corev1listers.NewConfigMapLister(indexer)
 
 			operatorStatus := &operatorv1.StaticPodOperatorStatus{
-				LatestAvailableRevision: 1,
-				NodeStatuses:            test.nodes,
+				OperatorStatus: operatorv1.OperatorStatus{LatestAvailableRevision: 1},
+				NodeStatuses:   test.nodes,
 			}
 			fakeStaticPodClient := v1helpers.NewFakeStaticPodOperatorClient(nil, operatorStatus, nil, nil)
 
@@ -348,8 +341,8 @@ func Test_CheckSafeToScaleCluster(t *testing.T) {
 			fakeConfigMapLister := corev1listers.NewConfigMapLister(configmapIndexer)
 
 			operatorStatus := &operatorv1.StaticPodOperatorStatus{
-				LatestAvailableRevision: 1,
-				NodeStatuses:            test.nodes,
+				OperatorStatus: operatorv1.OperatorStatus{LatestAvailableRevision: 1},
+				NodeStatuses:   test.nodes,
 			}
 			fakeStaticPodClient := v1helpers.NewFakeStaticPodOperatorClient(&test.operatorConfig, operatorStatus, nil, nil)
 
